@@ -17,13 +17,50 @@ from PyQt5.QtCore import *
 import pandas as pd
 import Model
 
+
+
 class Ui_MainWindow(QMainWindow):
+
     def __init__(self):
         super(QtWidgets.QMainWindow,self).__init__()
         self.setupUi(self)
+
         self.retranslateUi(self)
         self.start_time = None
         self.end_time = None
+        self.flag_start = False
+        self.btn_dict = {
+            "电气领班W":[8, 4, 3, 2, 1],
+            "高配A":[8, 4, 3, 1],
+            "高配B":[8, 4, 3, 1],
+            "变电站C":[8, 4, 3, 2, 1],
+            "变电站D":[8, 4, 3, 2, 1],
+            "变电站E":[8, 4, 3, 2, 1],
+            "柴发G":[],
+            "柴发H":[],
+            "暖通领班K":[],
+            "冷站I":[],
+            "冷站J":[],
+            "精密空调L":[],
+            "环境处M":[],
+        }
+        self.colnum_dict = {
+            "电气领班W": 0,
+            "高配A": 1,
+            "高配B": 2,
+            "变电站C": 3,
+            "变电站D": 4,
+            "变电站E": 5,
+            "柴发G": 6,
+            "柴发H": 7,
+            "暖通领班K": 8,
+            "冷站I": 9,
+            "冷站J": 10,
+            "精密空调L": 11,
+            "环境处M": 12,
+        }
+
+
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -124,7 +161,7 @@ class Ui_MainWindow(QMainWindow):
         self.gridLayout.addWidget(self.lcdNumber, 0, 2, 1, 1)
         #设计一个定时器
         self.timer = QtCore.QTimer()
-        self.timer.start(1000)
+        self.timer.start(10)
 
 
         MainWindow.setCentralWidget(self.centralwidget)
@@ -136,10 +173,27 @@ class Ui_MainWindow(QMainWindow):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         #连接到槽函数
+        self.disable_btn()
         self.timer.timeout.connect(self.clock)
         self.btn_read_excel.clicked.connect(self.openfile)
-        self.btn_read_excel.clicked.connect(self.creat_table_show)
+        # self.btn_read_excel.clicked.connect(self.creat_table_show)
         self.btn_begin.clicked.connect(self.task_begin)
+
+        self.W_Button.clicked.connect(lambda: self.btn_task(self.W_Button.text()))
+        self.A_Button.clicked.connect(lambda: self.btn_task(self.A_Button.text()))
+        self.B_Button.clicked.connect(lambda: self.btn_task(self.B_Button.text()))
+        self.C_Button.clicked.connect(lambda: self.btn_task(self.C_Button.text()))
+        self.D_Button.clicked.connect(lambda: self.btn_task(self.D_Button.text()))
+        self.E_Button.clicked.connect(lambda: self.btn_task(self.E_Button.text()))
+        self.G_Button.clicked.connect(lambda: self.btn_task(self.G_Button.text()))
+        self.H_Button.clicked.connect(lambda: self.btn_task(self.H_Button.text()))
+        self.K_Button.clicked.connect(lambda: self.btn_task(self.K_Button.text()))
+        self.I_Button.clicked.connect(lambda: self.btn_task(self.I_Button.text()))
+        self.J_Button.clicked.connect(lambda: self.btn_task(self.J_Button.text()))
+        self.L_Button.clicked.connect(lambda: self.btn_task(self.L_Button.text()))
+        self.M_Button.clicked.connect(lambda: self.btn_task(self.M_Button.text()))
+
+
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -163,19 +217,63 @@ class Ui_MainWindow(QMainWindow):
         self.btn_read_excel.setText(_translate("MainWindow", "导入模板"))
 
     def clock(self):
-        t = time.strftime('%H:%M:%S',time.localtime(time.time()))
+        # LCD计时显示
+        if not self.flag_start:
+            #显示当地时间
+            # t = time.strftime('%H:%M:%S',time.localtime(time.time()))
+            t = '0:00:00'
+        else:
+            dalte_t = datetime.datetime.now().replace(microsecond=0) - self.start_time
+            t = str(dalte_t).split(',')[-1]
         self.lcdNumber.display(t)
 
     def task_begin(self):
 
         if self.btn_begin.text()=='开始演练':
+            self.flag_start = True
             self.btn_begin.setText('停止演练')
-            self.start_time = datetime.datetime.now()
-            print(self.start_time)
+            self.start_time = datetime.datetime.now().replace(microsecond=0)
+            self.btn_read_excel.setEnabled(False)
+            self.btn_to_excel.setEnabled(False)
+            self.enable_btn()
         else:
+            self.flag_start = False
             self.btn_begin.setText('开始演练')
             self.end_time = datetime.datetime.now()
-            print(self.end_time-self.start_time)
+            self.disable_btn()
+
+
+    def enable_btn(self):
+        self.A_Button.setEnabled(True)
+        self.B_Button.setEnabled(True)
+        self.C_Button.setEnabled(True)
+        self.D_Button.setEnabled(True)
+        self.E_Button.setEnabled(True)
+        self.G_Button.setEnabled(True)
+        self.H_Button.setEnabled(True)
+        self.I_Button.setEnabled(True)
+        self.J_Button.setEnabled(True)
+        self.L_Button.setEnabled(True)
+        self.K_Button.setEnabled(True)
+        self.M_Button.setEnabled(True)
+        self.W_Button.setEnabled(True)
+
+    def disable_btn(self):
+        self.A_Button.setEnabled(False)
+        self.B_Button.setEnabled(False)
+        self.C_Button.setEnabled(False)
+        self.D_Button.setEnabled(False)
+        self.E_Button.setEnabled(False)
+        self.G_Button.setEnabled(False)
+        self.H_Button.setEnabled(False)
+        self.I_Button.setEnabled(False)
+        self.J_Button.setEnabled(False)
+        self.L_Button.setEnabled(False)
+        self.K_Button.setEnabled(False)
+        self.M_Button.setEnabled(False)
+        self.W_Button.setEnabled(False)
+        self.btn_begin.setEnabled(False)
+        self.btn_to_excel.setEnabled(False)
 
     def openfile(self):
         ###获取路径===================================================================
@@ -185,12 +283,16 @@ class Ui_MainWindow(QMainWindow):
         ###获取路径====================================================================
         path_openfile_name = openfile_name
         # print(path_openfile_name)
+        if len(path_openfile_name) > 0:
+            self.btn_begin.setEnabled(True)
+            self.creat_table_show()
+
 
     def creat_table_show(self):
         ###===========读取表格，转换表格，===========================================
         if len(path_openfile_name) > 0:
             frame_all = pd.read_excel(path_openfile_name,index_col=0)
-            print(frame_all)
+            # print(frame_all)
             frame_rows = frame_all.shape[0]
             frame_cols = frame_all.shape[1]
             # print(frame_rows)
@@ -219,5 +321,26 @@ class Ui_MainWindow(QMainWindow):
                     newItem = QTableWidgetItem(input_table_item)
                     newItem.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
                     self.tableWidget.setItem(i, j, newItem)
+
         else:
             self.centralWidget.show()
+
+
+    def btn_task(self,btn_text):
+        click_list = self.btn_dict.get(btn_text)
+        if  len(click_list) != 0:
+            i = click_list.pop()
+            j = self.colnum_dict.get(btn_text)
+            # print(i)
+            time_point = datetime.datetime.now().replace(microsecond=0)
+            time_point_str = datetime.datetime.strftime(time_point,'-->完成时间: %H:%M:%S;')
+            time_li = str(time_point - self.start_time).split(',')[-1].split(':')
+            time_complete = ''.join(['用时:',time_li[0],'时,',time_li[1],'分,',time_li[-1],'秒。'])
+            read_item_text = self.tableWidget.item(i,j).text()
+            new_item_text = ''.join([read_item_text,time_point_str,time_complete])
+            # print(new_item_text)
+            self.tableWidget.item(i,j).setText(new_item_text)
+            self.tableWidget.showColumn(j)
+
+
+
