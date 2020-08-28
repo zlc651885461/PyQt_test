@@ -15,7 +15,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import pandas as pd
-import Model
+import os
 
 
 
@@ -29,6 +29,10 @@ class Ui_MainWindow(QMainWindow):
         self.start_time = None
         self.end_time = None
         self.flag_start = False
+        self.frame_v_header = None
+        self.frame_h_header = None
+        self.path_openfile_name = None
+        self.path_to_excel = None
         self.btn_dict = {
             "电气领班W":[8, 4, 3, 2, 1],
             "高配A":[8, 4, 3, 1],
@@ -75,6 +79,8 @@ class Ui_MainWindow(QMainWindow):
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)
+
+
         self.gridLayout.addWidget(self.tableWidget, 2, 0, 1, 6)
         self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
         self.graphicsView.setMaximumSize(QtCore.QSize(380, 61))
@@ -111,33 +117,43 @@ class Ui_MainWindow(QMainWindow):
         self.B_Button.setObjectName("B_Button")
         self.horizontalLayout_4.addWidget(self.B_Button)
         self.C_Button = QtWidgets.QPushButton(self.centralwidget)
+        self.C_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.C_Button.setObjectName("C_Button")
         self.horizontalLayout_4.addWidget(self.C_Button)
         self.D_Button = QtWidgets.QPushButton(self.centralwidget)
+        self.D_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.D_Button.setObjectName("D_Button")
         self.horizontalLayout_4.addWidget(self.D_Button)
         self.E_Button = QtWidgets.QPushButton(self.centralwidget)
+        self.E_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.E_Button.setObjectName("E_Button")
         self.horizontalLayout_4.addWidget(self.E_Button)
         self.G_Button = QtWidgets.QPushButton(self.centralwidget)
+        self.G_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.G_Button.setObjectName("G_Button")
         self.horizontalLayout_4.addWidget(self.G_Button)
         self.H_Button = QtWidgets.QPushButton(self.centralwidget)
+        self.H_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.H_Button.setObjectName("H_Button")
         self.horizontalLayout_4.addWidget(self.H_Button)
         self.K_Button = QtWidgets.QPushButton(self.centralwidget)
+        self.K_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.K_Button.setObjectName("K_Button")
         self.horizontalLayout_4.addWidget(self.K_Button)
         self.I_Button = QtWidgets.QPushButton(self.centralwidget)
+        self.I_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.I_Button.setObjectName("I_Button")
         self.horizontalLayout_4.addWidget(self.I_Button)
         self.J_Button = QtWidgets.QPushButton(self.centralwidget)
+        self.J_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.J_Button.setObjectName("J_Button")
         self.horizontalLayout_4.addWidget(self.J_Button)
         self.L_Button = QtWidgets.QPushButton(self.centralwidget)
+        self.L_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.L_Button.setObjectName("L_Button")
         self.horizontalLayout_4.addWidget(self.L_Button)
         self.M_Button = QtWidgets.QPushButton(self.centralwidget)
+        self.M_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.M_Button.setObjectName("M_Button")
         self.horizontalLayout_4.addWidget(self.M_Button)
         self.horizontalLayout_6.addLayout(self.horizontalLayout_4)
@@ -178,7 +194,7 @@ class Ui_MainWindow(QMainWindow):
         self.btn_read_excel.clicked.connect(self.openfile)
         # self.btn_read_excel.clicked.connect(self.creat_table_show)
         self.btn_begin.clicked.connect(self.task_begin)
-
+        self.btn_to_excel.clicked.connect(self.save_event)
         self.W_Button.clicked.connect(lambda: self.btn_task(self.W_Button.text()))
         self.A_Button.clicked.connect(lambda: self.btn_task(self.A_Button.text()))
         self.B_Button.clicked.connect(lambda: self.btn_task(self.B_Button.text()))
@@ -229,7 +245,7 @@ class Ui_MainWindow(QMainWindow):
 
     def task_begin(self):
 
-        if self.btn_begin.text()=='开始演练':
+        if self.btn_begin.text() == '开始演练':
             self.flag_start = True
             self.btn_begin.setText('停止演练')
             self.start_time = datetime.datetime.now().replace(microsecond=0)
@@ -241,6 +257,7 @@ class Ui_MainWindow(QMainWindow):
             self.btn_begin.setText('开始演练')
             self.end_time = datetime.datetime.now()
             self.disable_btn()
+            self.btn_to_excel.setEnabled(True)
 
 
     def enable_btn(self):
@@ -277,34 +294,32 @@ class Ui_MainWindow(QMainWindow):
 
     def openfile(self):
         ###获取路径===================================================================
-        openfile_name,openfile_type = QFileDialog.getOpenFileName(self, '选择文件', 'C:/', 'Excel files(*.xlsx , *.xls, *.wps, *.et, *.ett);;All files(*);')
+        openfile_name,openfile_type = QFileDialog.getOpenFileName(self, '选择文件', 'C:/', 'Excel files(*.xlsx , *.xls);;All files(*);')
         # print(openfile_name,openfile_type)
-        global path_openfile_name
-        ###获取路径====================================================================
-        path_openfile_name = openfile_name
+        self.path_openfile_name = openfile_name
         # print(path_openfile_name)
-        if len(path_openfile_name) > 0:
+        if len(self.path_openfile_name) > 0:
             self.btn_begin.setEnabled(True)
             self.creat_table_show()
 
 
     def creat_table_show(self):
         ###===========读取表格，转换表格，===========================================
-        if len(path_openfile_name) > 0:
-            frame_all = pd.read_excel(path_openfile_name,index_col=0)
+        if len(self.path_openfile_name) > 0:
+            frame_all = pd.read_excel(self.path_openfile_name,index_col=0)
             # print(frame_all)
             frame_rows = frame_all.shape[0]
             frame_cols = frame_all.shape[1]
             # print(frame_rows)
             # print(frame_cols)
             #读取表格行/列表头
-            frame_h_header = frame_all.columns.values.tolist()
-            frame_v_header = frame_all.index.values.tolist()
+            self.frame_h_header = frame_all.columns.values.tolist()
+            self.frame_v_header = frame_all.index.values.tolist()
             ###======================给tablewidget设置行列表头============================
             self.tableWidget.setColumnCount(frame_cols)
             self.tableWidget.setRowCount(frame_rows)
-            self.tableWidget.setHorizontalHeaderLabels(frame_h_header)
-            self.tableWidget.setVerticalHeaderLabels(frame_v_header)
+            self.tableWidget.setHorizontalHeaderLabels(self.frame_h_header)
+            self.tableWidget.setVerticalHeaderLabels(self.frame_v_header)
 
             ###================遍历表格每个元素，同时添加到tablewidget中========================
             for j in range(frame_cols):
@@ -321,6 +336,7 @@ class Ui_MainWindow(QMainWindow):
                     newItem = QTableWidgetItem(input_table_item)
                     newItem.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
                     self.tableWidget.setItem(i, j, newItem)
+                    self.tableWidget.setRowHeight(i, 200)
 
         else:
             self.centralWidget.show()
@@ -333,9 +349,9 @@ class Ui_MainWindow(QMainWindow):
             j = self.colnum_dict.get(btn_text)
             # print(i)
             time_point = datetime.datetime.now().replace(microsecond=0)
-            time_point_str = datetime.datetime.strftime(time_point,'-->完成时间: %H:%M:%S;')
+            time_point_str = datetime.datetime.strftime(time_point,'\n完成时间: %H:%M:%S;')
             time_li = str(time_point - self.start_time).split(',')[-1].split(':')
-            time_complete = ''.join(['用时:',time_li[0],'时,',time_li[1],'分,',time_li[-1],'秒。'])
+            time_complete = ''.join(['用时:',time_li[-2],'分,',time_li[-1],'秒。'])
             read_item_text = self.tableWidget.item(i,j).text()
             new_item_text = ''.join([read_item_text,time_point_str,time_complete])
             # print(new_item_text)
@@ -343,4 +359,25 @@ class Ui_MainWindow(QMainWindow):
             self.tableWidget.showColumn(j)
 
 
+    def save_event(self):
+        directory1 = QFileDialog.getSaveFileName(None, "文件保存", "C:/", "Excel files(*.xlsx , *.xls);;All files(*);")
+        print(directory1)  # 打印文件夹路径
+        self.path_to_excel = os.path.join(directory1[0])
 
+        if len(self.path_to_excel) != 0:
+            self.task_to_excel()
+        
+
+    def task_to_excel(self):
+
+        frame_out = pd.DataFrame(index=self.frame_v_header,columns=self.frame_h_header)
+        frame_rows = frame_out.shape[0]
+        frame_cols = frame_out.shape[1]
+        for j in range(frame_cols):
+            col_list = []
+            for i in range(frame_rows):
+                read_item_text = self.tableWidget.item(i, j).text()
+                col_list.append(read_item_text)
+            frame_out[self.frame_h_header[j]] = col_list
+        # print(frame_out)
+        frame_out.to_excel(self.path_to_excel)
