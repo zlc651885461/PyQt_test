@@ -380,4 +380,10 @@ class Ui_MainWindow(QMainWindow):
                 col_list.append(read_item_text)
             frame_out[self.frame_h_header[j]] = col_list
         # print(frame_out)
-        frame_out.to_excel(self.path_to_excel)
+        try:
+            frame_out.to_excel(self.path_to_excel)
+        except Exception as e:
+            self.dialog = QtWidgets.QMessageBox.about(self,'警告',e)
+            self.dialog.exec_()
+        else:
+            self.dialog = QtWidgets.QMessageBox.about(self,'通知',''.join(['成功导出至"',self.path_to_excel,'".']))
