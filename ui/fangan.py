@@ -15,6 +15,8 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.image as pimg
 import os
 
 
@@ -31,7 +33,7 @@ class Ui_MainWindow(QMainWindow):
         self.flag_start = False
         self.frame_v_header = None
         self.frame_h_header = None
-        self.path_openfile_name = None
+        self.path_openfile = None
         self.path_to_excel = None
         self.btn_dict = {
             "电气领班W":[8, 4, 3, 2, 1],
@@ -70,32 +72,50 @@ class Ui_MainWindow(QMainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1596, 885)
         MainWindow.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        MainWindow.setIconSize(QtCore.QSize(128, 128))
+        MainWindow.setIconSize(QtCore.QSize(256, 256))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
+        self.centralwidget.setStyleSheet("background:white")
+        # tableweidget
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)
-
+        self.tableWidget.setStyleSheet("border:2px solid white; background-color:transparent")
 
         self.gridLayout.addWidget(self.tableWidget, 2, 0, 1, 6)
-        self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
-        self.graphicsView.setMaximumSize(QtCore.QSize(380, 61))
-        self.graphicsView.setObjectName("graphicsView")
-        self.gridLayout.addWidget(self.graphicsView, 0, 0, 1, 1)
-        self.btn_to_excel = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_to_excel.setMaximumSize(QtCore.QSize(128, 28))
-        self.btn_to_excel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.btn_to_excel.setObjectName("btn_to_excel")
-        self.gridLayout.addWidget(self.btn_to_excel, 0, 5, 1, 1)
+        # table背景图片
+        self.tableBack = QtWidgets.QLabel(self.centralwidget)
+        self.tableBack.setObjectName("tableBack")
+        self.tableBack.setPixmap(QtGui.QPixmap('./static/数据中心全景图.jpg'))
+        self.gridLayout.addWidget(self.tableBack, 2, 0, 1, 6)
+        self.tableBack.setScaledContents(True)
+        # 创建透明度
+        op = QtWidgets.QGraphicsOpacityEffect()
+        op.setOpacity(0.5)
+        self.tableBack.setGraphicsEffect(op)
+        self.tableBack.setAutoFillBackground(True)
+        self.tableBack.stackUnder(self.tableWidget)
+
+        # 左上角图标
+        self.ABCImg = QtWidgets.QLabel(self.centralwidget)
+        self.ABCImg.setMaximumSize(QtCore.QSize(180, 61))
+        self.ABCImg.setObjectName("ABCImg")
+        self.ABCImg.setPixmap(QtGui.QPixmap('./static/LabelABC.png'))
+        self.ABCImg.setScaledContents(True)
+
+        self.gridLayout.addWidget(self.ABCImg, 0, 0, 1, 1)
+
+
+
+
         self.ABCDC_label = QtWidgets.QLabel(self.centralwidget)
         self.ABCDC_label.setMaximumSize(QtCore.QSize(551, 41))
         font = QtGui.QFont()
         font.setFamily("Yuanti SC")
-        font.setPointSize(18)
+        font.setPointSize(30)
         self.ABCDC_label.setFont(font)
         self.ABCDC_label.setTextFormat(QtCore.Qt.AutoText)
         self.ABCDC_label.setObjectName("ABCDC_label")
@@ -105,75 +125,81 @@ class Ui_MainWindow(QMainWindow):
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.W_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.W_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.W_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.W_Button.setObjectName("W_Button")
         self.horizontalLayout_4.addWidget(self.W_Button)
         self.A_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.A_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.A_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.A_Button.setObjectName("A_Button")
         self.horizontalLayout_4.addWidget(self.A_Button)
         self.B_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.B_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.B_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.B_Button.setObjectName("B_Button")
         self.horizontalLayout_4.addWidget(self.B_Button)
         self.C_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.C_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.C_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.C_Button.setObjectName("C_Button")
         self.horizontalLayout_4.addWidget(self.C_Button)
         self.D_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.D_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.D_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.D_Button.setObjectName("D_Button")
         self.horizontalLayout_4.addWidget(self.D_Button)
         self.E_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.E_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.E_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.E_Button.setObjectName("E_Button")
         self.horizontalLayout_4.addWidget(self.E_Button)
         self.G_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.G_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.G_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.G_Button.setObjectName("G_Button")
         self.horizontalLayout_4.addWidget(self.G_Button)
         self.H_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.H_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.H_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.H_Button.setObjectName("H_Button")
         self.horizontalLayout_4.addWidget(self.H_Button)
         self.K_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.K_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.K_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.K_Button.setObjectName("K_Button")
         self.horizontalLayout_4.addWidget(self.K_Button)
         self.I_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.I_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.I_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.I_Button.setObjectName("I_Button")
         self.horizontalLayout_4.addWidget(self.I_Button)
         self.J_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.J_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.J_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.J_Button.setObjectName("J_Button")
         self.horizontalLayout_4.addWidget(self.J_Button)
         self.L_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.L_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.L_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.L_Button.setObjectName("L_Button")
         self.horizontalLayout_4.addWidget(self.L_Button)
         self.M_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.M_Button.setMaximumSize(QtCore.QSize(126, 28))
+        self.M_Button.setMaximumSize(QtCore.QSize(126, 35))
         self.M_Button.setObjectName("M_Button")
         self.horizontalLayout_4.addWidget(self.M_Button)
         self.horizontalLayout_6.addLayout(self.horizontalLayout_4)
         self.gridLayout.addLayout(self.horizontalLayout_6, 1, 0, 1, 6)
         self.btn_begin = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_begin.setMaximumSize(QtCore.QSize(128, 28))
+        self.btn_begin.setMaximumSize(QtCore.QSize(128, 36))
         self.btn_begin.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.btn_begin.setObjectName("btn_begin")
         self.gridLayout.addWidget(self.btn_begin, 0, 4, 1, 1)
         self.btn_read_excel = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_read_excel.setMaximumSize(QtCore.QSize(128, 28))
+        self.btn_read_excel.setMaximumSize(QtCore.QSize(128, 36))
         self.btn_read_excel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.btn_read_excel.setObjectName("btn_read_excel")
         self.gridLayout.addWidget(self.btn_read_excel, 0, 3, 1, 1)
+        self.btn_to_excel = QtWidgets.QPushButton(self.centralwidget)
+        self.btn_to_excel.setMaximumSize(QtCore.QSize(128, 36))
+        self.btn_to_excel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.btn_to_excel.setObjectName("btn_to_excel")
+        self.gridLayout.addWidget(self.btn_to_excel, 0, 5, 1, 1)
 
         self.lcdNumber = QtWidgets.QLCDNumber(self.centralwidget)
         self.lcdNumber.setDigitCount(8)
         self.lcdNumber.setMode(QtWidgets.QLCDNumber.Dec)
         self.lcdNumber.setObjectName("lcdNumber")
-        self.lcdNumber.setStyleSheet("border: 2px solid black; color: red; background: silver;")
+        self.lcdNumber.setStyleSheet("border: 2px solid none; color: white; background: silver;")
+        self.lcdNumber.setMaximumSize(QtCore.QSize(160,80))
         self.gridLayout.addWidget(self.lcdNumber, 0, 2, 1, 1)
         #设计一个定时器
         self.timer = QtCore.QTimer()
@@ -192,7 +218,6 @@ class Ui_MainWindow(QMainWindow):
         self.disable_btn()
         self.timer.timeout.connect(self.clock)
         self.btn_read_excel.clicked.connect(self.openfile)
-        # self.btn_read_excel.clicked.connect(self.creat_table_show)
         self.btn_begin.clicked.connect(self.task_begin)
         self.btn_to_excel.clicked.connect(self.save_event)
         self.W_Button.clicked.connect(lambda: self.btn_task(self.W_Button.text()))
@@ -293,35 +318,43 @@ class Ui_MainWindow(QMainWindow):
         self.btn_to_excel.setEnabled(False)
 
     def openfile(self):
-        ###获取路径===================================================================
+        # 获取路径
         openfile_name,openfile_type = QFileDialog.getOpenFileName(self, '选择文件', 'C:/', 'Excel files(*.xlsx , *.xls);;All files(*);')
         # print(openfile_name,openfile_type)
-        self.path_openfile_name = openfile_name
-        # print(path_openfile_name)
-        if len(self.path_openfile_name) > 0:
+        self.path_openfile = openfile_name
+        file_name = self.path_openfile.split('/')[-1].split('.')[0]
+        if len(self.path_openfile) > 0:
             self.btn_begin.setEnabled(True)
             self.creat_table_show()
 
+            font = QtGui.QFont()
+            font.setFamily("Yuanti SC")
+            font.setPointSize(60)
+            self.tableBack.setFont(font)
+            self.tableBack.setText(file_name)
+            self.tableBack.setStyleSheet("text-align:center")
+            self.tableBack.setTextFormat(QtCore.Qt.AutoText)
+
 
     def creat_table_show(self):
-        ###===========读取表格，转换表格，===========================================
-        if len(self.path_openfile_name) > 0:
-            frame_all = pd.read_excel(self.path_openfile_name,index_col=0)
+        # 读取表格，转换表格，
+        if len(self.path_openfile) > 0:
+            frame_all = pd.read_excel(self.path_openfile, index_col=0)
             # print(frame_all)
             frame_rows = frame_all.shape[0]
             frame_cols = frame_all.shape[1]
             # print(frame_rows)
             # print(frame_cols)
-            #读取表格行/列表头
+            # 读取表格行/列表头
             self.frame_h_header = frame_all.columns.values.tolist()
             self.frame_v_header = frame_all.index.values.tolist()
-            ###======================给tablewidget设置行列表头============================
+            # 给tablewidget设置行列表头
             self.tableWidget.setColumnCount(frame_cols)
             self.tableWidget.setRowCount(frame_rows)
             self.tableWidget.setHorizontalHeaderLabels(self.frame_h_header)
             self.tableWidget.setVerticalHeaderLabels(self.frame_v_header)
 
-            ###================遍历表格每个元素，同时添加到tablewidget中========================
+            # 遍历表格每个元素，同时添加到tablewidget中
             for j in range(frame_cols):
                 input_table_cols_list = frame_all[frame_all.columns[j]].values.tolist()
                 # button_start = QPushButton(str(input_table_cols_list[0]))
@@ -335,6 +368,7 @@ class Ui_MainWindow(QMainWindow):
                     # print(input_table_item)
                     newItem = QTableWidgetItem(input_table_item)
                     newItem.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+                    newItem.setFont(QtGui.QFont("Yuanti SC",14))
                     self.tableWidget.setItem(i, j, newItem)
                     self.tableWidget.setRowHeight(i, 200)
 

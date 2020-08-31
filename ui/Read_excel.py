@@ -57,7 +57,7 @@ class Ui_MainWindow(QMainWindow):
 
         ###获取路径====================================================================
         path_openfile_name = openfile_name[0]
-        # print(path_openfile_name)
+        # print(path_openfile)
 
     def creat_table_show(self):
         ###===========读取表格，转换表格，===========================================

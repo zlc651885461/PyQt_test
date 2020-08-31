@@ -38,7 +38,7 @@ class Ui_MainWindow(QMainWindow):
         self.gridLayout.addWidget(self.ReadExcelButton, 0, 3, 1, 1)
         self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
         self.graphicsView.setMaximumSize(QtCore.QSize(380, 61))
-        self.graphicsView.setObjectName("graphicsView")
+        self.graphicsView.setObjectName("ABCImg")
 
         self.gridLayout.addWidget(self.graphicsView, 0, 0, 1, 1)
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
@@ -158,7 +158,7 @@ class Ui_MainWindow(QMainWindow):
         global path_openfile_name
         ###获取路径====================================================================
         path_openfile_name = openfile_name[0]
-        # print(path_openfile_name)
+        # print(path_openfile)
 
     def creat_table_show(self):
         ###===========读取表格，转换表格，===========================================
