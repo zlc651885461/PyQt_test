@@ -15,18 +15,15 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.image as pimg
+import json
 import os
-
 
 
 class Ui_MainWindow(QMainWindow):
 
     def __init__(self):
-        super(QtWidgets.QMainWindow,self).__init__()
+        super(QtWidgets.QMainWindow, self).__init__()
         self.setupUi(self)
-
         self.retranslateUi(self)
         self.start_time = None
         self.end_time = None
@@ -35,21 +32,7 @@ class Ui_MainWindow(QMainWindow):
         self.frame_h_header = None
         self.path_openfile = None
         self.path_to_excel = None
-        self.btn_dict = {
-            "电气领班W":[8, 4, 3, 2, 1],
-            "高配A":[8, 4, 3, 1],
-            "高配B":[8, 4, 3, 1],
-            "变电站C":[8, 4, 3, 2, 1],
-            "变电站D":[8, 4, 3, 2, 1],
-            "变电站E":[8, 4, 3, 2, 1],
-            "柴发G":[],
-            "柴发H":[],
-            "暖通领班K":[],
-            "冷站I":[],
-            "冷站J":[],
-            "精密空调L":[],
-            "环境处M":[],
-        }
+        self.btn_dict = {}
         self.colnum_dict = {
             "电气领班W": 0,
             "高配A": 1,
@@ -66,38 +49,37 @@ class Ui_MainWindow(QMainWindow):
             "环境处M": 12,
         }
 
-
-
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1596, 885)
         MainWindow.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        MainWindow.setIconSize(QtCore.QSize(256, 256))
+        MainWindow.setIconSize(QtCore.QSize(128, 128))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
-        self.centralwidget.setStyleSheet("background:white")
+
         # tableweidget
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)
-        self.tableWidget.setStyleSheet("border:2px solid white; background-color:transparent")
-
+        self.tableWidget.setStyleSheet("border:2px solid none; selection-background-color:green; background-color:transparent; gridline-color:none")
         self.gridLayout.addWidget(self.tableWidget, 2, 0, 1, 6)
+
         # table背景图片
         self.tableBack = QtWidgets.QLabel(self.centralwidget)
         self.tableBack.setObjectName("tableBack")
         self.tableBack.setPixmap(QtGui.QPixmap('./static/数据中心全景图.jpg'))
+        self.tableBack.setScaledContents(True)  # 设置图片自动适应大小
         self.gridLayout.addWidget(self.tableBack, 2, 0, 1, 6)
-        self.tableBack.setScaledContents(True)
+        self.tableBack.stackUnder(self.tableWidget)  # 将背景图片放到表格下层
+        self.tableBack.setAutoFillBackground(True)
         # 创建透明度
         op = QtWidgets.QGraphicsOpacityEffect()
         op.setOpacity(0.5)
-        self.tableBack.setGraphicsEffect(op)
-        self.tableBack.setAutoFillBackground(True)
-        self.tableBack.stackUnder(self.tableWidget)
+        # self.tableBack.setGraphicsEffect(op)
+
 
         # 左上角图标
         self.ABCImg = QtWidgets.QLabel(self.centralwidget)
@@ -105,12 +87,8 @@ class Ui_MainWindow(QMainWindow):
         self.ABCImg.setObjectName("ABCImg")
         self.ABCImg.setPixmap(QtGui.QPixmap('./static/LabelABC.png'))
         self.ABCImg.setScaledContents(True)
-
         self.gridLayout.addWidget(self.ABCImg, 0, 0, 1, 1)
-
-
-
-
+        # 中间标题
         self.ABCDC_label = QtWidgets.QLabel(self.centralwidget)
         self.ABCDC_label.setMaximumSize(QtCore.QSize(551, 41))
         font = QtGui.QFont()
@@ -124,87 +102,90 @@ class Ui_MainWindow(QMainWindow):
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        # 角色计时按钮
         self.W_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.W_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.W_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.W_Button.setObjectName("W_Button")
         self.horizontalLayout_4.addWidget(self.W_Button)
         self.A_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.A_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.A_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.A_Button.setObjectName("A_Button")
         self.horizontalLayout_4.addWidget(self.A_Button)
         self.B_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.B_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.B_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.B_Button.setObjectName("B_Button")
         self.horizontalLayout_4.addWidget(self.B_Button)
         self.C_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.C_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.C_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.C_Button.setObjectName("C_Button")
         self.horizontalLayout_4.addWidget(self.C_Button)
         self.D_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.D_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.D_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.D_Button.setObjectName("D_Button")
         self.horizontalLayout_4.addWidget(self.D_Button)
         self.E_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.E_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.E_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.E_Button.setObjectName("E_Button")
         self.horizontalLayout_4.addWidget(self.E_Button)
         self.G_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.G_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.G_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.G_Button.setObjectName("G_Button")
         self.horizontalLayout_4.addWidget(self.G_Button)
         self.H_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.H_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.H_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.H_Button.setObjectName("H_Button")
         self.horizontalLayout_4.addWidget(self.H_Button)
         self.K_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.K_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.K_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.K_Button.setObjectName("K_Button")
         self.horizontalLayout_4.addWidget(self.K_Button)
         self.I_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.I_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.I_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.I_Button.setObjectName("I_Button")
         self.horizontalLayout_4.addWidget(self.I_Button)
         self.J_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.J_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.J_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.J_Button.setObjectName("J_Button")
         self.horizontalLayout_4.addWidget(self.J_Button)
         self.L_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.L_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.L_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.L_Button.setObjectName("L_Button")
         self.horizontalLayout_4.addWidget(self.L_Button)
         self.M_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.M_Button.setMaximumSize(QtCore.QSize(126, 35))
+        self.M_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.M_Button.setObjectName("M_Button")
         self.horizontalLayout_4.addWidget(self.M_Button)
         self.horizontalLayout_6.addLayout(self.horizontalLayout_4)
         self.gridLayout.addLayout(self.horizontalLayout_6, 1, 0, 1, 6)
+
+        # 上面三个功能按钮
         self.btn_begin = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_begin.setMaximumSize(QtCore.QSize(128, 36))
+        self.btn_begin.setMaximumSize(QtCore.QSize(128, 28))
         self.btn_begin.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.btn_begin.setObjectName("btn_begin")
         self.gridLayout.addWidget(self.btn_begin, 0, 4, 1, 1)
         self.btn_read_excel = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_read_excel.setMaximumSize(QtCore.QSize(128, 36))
+        self.btn_read_excel.setMaximumSize(QtCore.QSize(128, 28))
         self.btn_read_excel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.btn_read_excel.setObjectName("btn_read_excel")
         self.gridLayout.addWidget(self.btn_read_excel, 0, 3, 1, 1)
         self.btn_to_excel = QtWidgets.QPushButton(self.centralwidget)
-        self.btn_to_excel.setMaximumSize(QtCore.QSize(128, 36))
+        self.btn_to_excel.setMaximumSize(QtCore.QSize(128, 28))
         self.btn_to_excel.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.btn_to_excel.setObjectName("btn_to_excel")
         self.gridLayout.addWidget(self.btn_to_excel, 0, 5, 1, 1)
 
+        # lcdNumber
         self.lcdNumber = QtWidgets.QLCDNumber(self.centralwidget)
         self.lcdNumber.setDigitCount(8)
         self.lcdNumber.setMode(QtWidgets.QLCDNumber.Dec)
         self.lcdNumber.setObjectName("lcdNumber")
-        self.lcdNumber.setStyleSheet("border: 2px solid none; color: white; background: silver;")
-        self.lcdNumber.setMaximumSize(QtCore.QSize(160,80))
+        self.lcdNumber.setStyleSheet("border: 2px solid gray; color: white; background: silver;")
+        self.lcdNumber.setMaximumSize(QtCore.QSize(160, 80))
         self.gridLayout.addWidget(self.lcdNumber, 0, 2, 1, 1)
-        #设计一个定时器
+        # 设计一个定时器
         self.timer = QtCore.QTimer()
         self.timer.start(10)
-
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -214,7 +195,7 @@ class Ui_MainWindow(QMainWindow):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        #连接到槽函数
+        # 连接到槽函数
         self.disable_btn()
         self.timer.timeout.connect(self.clock)
         self.btn_read_excel.clicked.connect(self.openfile)
@@ -233,8 +214,6 @@ class Ui_MainWindow(QMainWindow):
         self.J_Button.clicked.connect(lambda: self.btn_task(self.J_Button.text()))
         self.L_Button.clicked.connect(lambda: self.btn_task(self.L_Button.text()))
         self.M_Button.clicked.connect(lambda: self.btn_task(self.M_Button.text()))
-
-
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -260,7 +239,7 @@ class Ui_MainWindow(QMainWindow):
     def clock(self):
         # LCD计时显示
         if not self.flag_start:
-            #显示当地时间
+            # 显示当地时间
             # t = time.strftime('%H:%M:%S',time.localtime(time.time()))
             t = '0:00:00'
         else:
@@ -277,13 +256,15 @@ class Ui_MainWindow(QMainWindow):
             self.btn_read_excel.setEnabled(False)
             self.btn_to_excel.setEnabled(False)
             self.enable_btn()
+            self.item_alter(0,12)
         else:
             self.flag_start = False
             self.btn_begin.setText('开始演练')
             self.end_time = datetime.datetime.now()
             self.disable_btn()
             self.btn_to_excel.setEnabled(True)
-
+            for j in range(13):
+                self.item_alter(9,j)
 
     def enable_btn(self):
         self.A_Button.setEnabled(True)
@@ -319,23 +300,153 @@ class Ui_MainWindow(QMainWindow):
 
     def openfile(self):
         # 获取路径
-        openfile_name,openfile_type = QFileDialog.getOpenFileName(self, '选择文件', 'C:/', 'Excel files(*.xlsx , *.xls);;All files(*);')
+        openfile_name, openfile_type = QFileDialog.getOpenFileName(self, '选择文件', './', 'Excel files(*.xlsx , *.xls);; All files(*);')
         # print(openfile_name,openfile_type)
         self.path_openfile = openfile_name
         file_name = self.path_openfile.split('/')[-1].split('.')[0]
         if len(self.path_openfile) > 0:
             self.btn_begin.setEnabled(True)
-            self.creat_table_show()
+            self.load_dict()
 
             font = QtGui.QFont()
             font.setFamily("Yuanti SC")
             font.setPointSize(60)
             self.tableBack.setFont(font)
             self.tableBack.setText(file_name)
-            self.tableBack.setStyleSheet("text-align:center")
+            self.tableBack.setStyleSheet("text-align:center;color:green;")
             self.tableBack.setTextFormat(QtCore.Qt.AutoText)
+            self.tableBack.setAlignment(Qt.AlignCenter)
 
+    """
+    加载物业计时点表
+    """
+    def load_dict(self):
+        try:
+            with open('./config.json',encoding='utf-8') as f:
+                res = f.read()
+                plan_dict = json.loads(res)
+        except Exception as e:
+            self.dialog = QtWidgets.QMessageBox.about(self, '通知', e)
 
+        # 根据方案文件名判断应用场景
+        file_name = self.path_openfile.split('/')[-1].split('.')[0]
+        if '3' in file_name and '中断' in file_name:
+            print("3# 中断")
+            self.btn_dict = plan_dict.get('num3_break',{
+                "电气领班W": [8, 4, 3, 2, 1],
+                "高配A": [8, 4, 3, 1],
+                "高配B": [8, 4, 3, 1],
+                "变电站C": [8, 4, 3, 2, 1],
+                "变电站D": [8, 4, 3, 2, 1],
+                "变电站E": [8, 4, 3, 2, 1],
+                "柴发G": [8, 4, 3, 1],
+                "柴发H": [8, 4, 3, 1],
+                "暖通领班K": [8, 4, 3, 1],
+                "冷站I": [8, 4, 3, 1],
+                "冷站J": [8, 4, 3, 1],
+                "精密空调L": [8, 4, 3, 1],
+                "环境处M": [8, 4, 3, 1],
+            })
+            self.creat_table_show()
+            return
+        elif '3' in file_name and '恢复' in file_name:
+            self.btn_dict = plan_dict.get('num3_resume',{
+                "电气领班W": [8, 4, 3, 2, 1],
+                "高配A": [8, 4, 3, 1],
+                "高配B": [8, 4, 3, 1],
+                "变电站C": [8, 4, 3, 2, 1],
+                "变电站D": [8, 4, 3, 2, 1],
+                "变电站E": [8, 4, 3, 2, 1],
+                "柴发G": [8, 4, 3, 1],
+                "柴发H": [8, 4, 3, 1],
+                "暖通领班K": [8, 4, 3, 1],
+                "冷站I": [8, 4, 3, 1],
+                "冷站J": [8, 4, 3, 1],
+                "精密空调L": [8, 4, 3, 1],
+                "环境处M": [8, 4, 3, 1],
+            })
+            self.creat_table_show()
+            return
+        elif '2' in file_name and '中断' in file_name:
+            self.btn_dict = plan_dict.get('num2_break',{
+                "电气领班W": [8, 4, 3, 2, 1],
+                "高配A": [8, 4, 3, 1],
+                "高配B": [8, 4, 3, 1],
+                "变电站C": [8, 4, 3, 2, 1],
+                "变电站D": [8, 4, 3, 2, 1],
+                "变电站E": [8, 4, 3, 2, 1],
+                "柴发G": [8, 4, 3, 1],
+                "柴发H": [8, 4, 3, 1],
+                "暖通领班K": [8, 4, 3, 1],
+                "冷站I": [8, 4, 3, 1],
+                "冷站J": [8, 4, 3, 1],
+                "精密空调L": [8, 4, 3, 1],
+                "环境处M": [8, 4, 3, 1],
+            })
+            self.creat_table_show()
+            return
+        elif '2' in file_name and '恢复' in file_name:
+            self.btn_dict = plan_dict.get('num2_resume',{
+                "电气领班W": [8, 4, 3, 2, 1],
+                "高配A": [8, 4, 3, 1],
+                "高配B": [8, 4, 3, 1],
+                "变电站C": [8, 4, 3, 2, 1],
+                "变电站D": [8, 4, 3, 2, 1],
+                "变电站E": [8, 4, 3, 2, 1],
+                "柴发G": [8, 4, 3, 1],
+                "柴发H": [8, 4, 3, 1],
+                "暖通领班K": [8, 4, 3, 1],
+                "冷站I": [8, 4, 3, 1],
+                "冷站J": [8, 4, 3, 1],
+                "精密空调L": [8, 4, 3, 1],
+                "环境处M": [8, 4, 3, 1],
+            })
+            self.creat_table_show()
+            return
+        if '1' in file_name and '中断' in file_name:
+            self.btn_dict = plan_dict.get('num1_break',{
+                "电气领班W": [8, 4, 3, 2, 1],
+                "高配A": [8, 4, 3, 1],
+                "高配B": [8, 4, 3, 1],
+                "变电站C": [8, 4, 3, 2, 1],
+                "变电站D": [8, 4, 3, 2, 1],
+                "变电站E": [8, 4, 3, 2, 1],
+                "柴发G": [8, 4, 3, 1],
+                "柴发H": [8, 4, 3, 1],
+                "暖通领班K": [8, 4, 3, 1],
+                "冷站I": [8, 4, 3, 1],
+                "冷站J": [8, 4, 3, 1],
+                "精密空调L": [8, 4, 3, 1],
+                "环境处M": [8, 4, 3, 1],
+            })
+            self.creat_table_show()
+            return
+        elif '1' in file_name and '恢复' in file_name:
+            self.btn_dict = plan_dict.get('num1_resume',{
+                "电气领班W": [8, 4, 3, 2, 1],
+                "高配A": [8, 4, 3, 1],
+                "高配B": [8, 4, 3, 1],
+                "变电站C": [8, 4, 3, 2, 1],
+                "变电站D": [8, 4, 3, 2, 1],
+                "变电站E": [8, 4, 3, 2, 1],
+                "柴发G": [8, 4, 3, 1],
+                "柴发H": [8, 4, 3, 1],
+                "暖通领班K": [8, 4, 3, 1],
+                "冷站I": [8, 4, 3, 1],
+                "冷站J": [8, 4, 3, 1],
+                "精密空调L": [8, 4, 3, 1],
+                "环境处M": [8, 4, 3, 1],
+            })
+            self.creat_table_show()
+            return
+        else:
+            print('else')
+            self.dialog = QtWidgets.QMessageBox.about(self, '通知', '方案不符合要求！')
+            return
+
+    """
+    table显示功能
+    """
     def creat_table_show(self):
         # 读取表格，转换表格，
         if len(self.path_openfile) > 0:
@@ -343,8 +454,7 @@ class Ui_MainWindow(QMainWindow):
             # print(frame_all)
             frame_rows = frame_all.shape[0]
             frame_cols = frame_all.shape[1]
-            # print(frame_rows)
-            # print(frame_cols)
+
             # 读取表格行/列表头
             self.frame_h_header = frame_all.columns.values.tolist()
             self.frame_v_header = frame_all.index.values.tolist()
@@ -352,59 +462,65 @@ class Ui_MainWindow(QMainWindow):
             self.tableWidget.setColumnCount(frame_cols)
             self.tableWidget.setRowCount(frame_rows)
             self.tableWidget.setHorizontalHeaderLabels(self.frame_h_header)
+            self.tableWidget.horizontalHeader().setStyleSheet("border:2px solid #888; background-color:#AAA; font:14px;")
+            self.tableWidget.verticalHeader().setFixedWidth(60)
             self.tableWidget.setVerticalHeaderLabels(self.frame_v_header)
+            self.tableWidget.verticalHeader().setStyleSheet("border:2px solid #888; background-color:#AAA;font:14px;")
 
             # 遍历表格每个元素，同时添加到tablewidget中
             for j in range(frame_cols):
                 input_table_cols_list = frame_all[frame_all.columns[j]].values.tolist()
-                # button_start = QPushButton(str(input_table_cols_list[0]))
                 # button_start.setStyleSheet('''text-align:center;background-color:DarkSeaGreen;height:30px;border-style:outset;font:14px''')
-                # btnItem = QTableWidgetItem(str(input_table_cols_list[0]))
-                # self.tableWidget.setStyleSheet(button_start,btnItem)
-                for i in range(0,frame_rows):
+
+                for i in range(0, frame_rows):
                     input_table_item = input_table_cols_list[i]
-                    ###==============将遍历的元素添加到tablewidget中并显示=======================
+                    # 将遍历的元素添加到tablewidget中并显示
                     input_table_item = str(input_table_item)
                     # print(input_table_item)
                     newItem = QTableWidgetItem(input_table_item)
                     newItem.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-                    newItem.setFont(QtGui.QFont("Yuanti SC",14))
+
+                    # newItem.setFont(QtGui.QFont("Yuanti SC",14)) #设置单元格内字体，字号
                     self.tableWidget.setItem(i, j, newItem)
                     self.tableWidget.setRowHeight(i, 200)
 
         else:
             self.centralWidget.show()
 
-
-    def btn_task(self,btn_text):
+    """
+    按键功能
+    """
+    def btn_task(self, btn_text):
         click_list = self.btn_dict.get(btn_text)
-        if  len(click_list) != 0:
+        if len(click_list) != 0:
             i = click_list.pop()
             j = self.colnum_dict.get(btn_text)
             # print(i)
-            time_point = datetime.datetime.now().replace(microsecond=0)
-            time_point_str = datetime.datetime.strftime(time_point,'\n完成时间: %H:%M:%S;')
-            time_li = str(time_point - self.start_time).split(',')[-1].split(':')
-            time_complete = ''.join(['用时:',time_li[-2],'分,',time_li[-1],'秒。'])
-            read_item_text = self.tableWidget.item(i,j).text()
-            new_item_text = ''.join([read_item_text,time_point_str,time_complete])
-            # print(new_item_text)
-            self.tableWidget.item(i,j).setText(new_item_text)
-            self.tableWidget.showColumn(j)
+            self.item_alter(i,j)
 
+    """修改单元格内容--添加完成时间，用时"""
+    def item_alter(self,i,j):
+        time_point = datetime.datetime.now().replace(microsecond=0)
+        time_point_str = datetime.datetime.strftime(time_point, '\n完成时间: %H:%M:%S;')
+        time_li = str(time_point - self.start_time).split(',')[-1].split(':')
+        time_complete = ''.join(['用时:', time_li[-2], '分,', time_li[-1], '秒。'])
+        read_item_text = self.tableWidget.item(i, j).text()
+        new_item_text = ''.join([read_item_text, time_point_str, time_complete])
+        # print(new_item_text)
+        self.tableWidget.item(i, j).setText(new_item_text)
+        self.tableWidget.showColumn(j)
 
+    """
+    导出功能
+    """
     def save_event(self):
         directory1 = QFileDialog.getSaveFileName(None, "文件保存", "C:/", "Excel files(*.xlsx , *.xls);;All files(*);")
-        print(directory1)  # 打印文件夹路径
         self.path_to_excel = os.path.join(directory1[0])
-
         if len(self.path_to_excel) != 0:
             self.task_to_excel()
-        
 
     def task_to_excel(self):
-
-        frame_out = pd.DataFrame(index=self.frame_v_header,columns=self.frame_h_header)
+        frame_out = pd.DataFrame(index=self.frame_v_header, columns=self.frame_h_header)
         frame_rows = frame_out.shape[0]
         frame_cols = frame_out.shape[1]
         for j in range(frame_cols):
@@ -417,7 +533,7 @@ class Ui_MainWindow(QMainWindow):
         try:
             frame_out.to_excel(self.path_to_excel)
         except Exception as e:
-            self.dialog = QtWidgets.QMessageBox.about(self,'警告',e)
+            self.dialog = QtWidgets.QMessageBox.about(self, '警告', e)
             self.dialog.exec_()
         else:
-            self.dialog = QtWidgets.QMessageBox.about(self,'通知',''.join(['成功导出至"',self.path_to_excel,'".']))
+            self.dialog = QtWidgets.QMessageBox.about(self, '通知', ''.join(['成功导出至"', self.path_to_excel, '".']))
