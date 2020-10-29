@@ -307,7 +307,6 @@ class Ui_MainWindow(QMainWindow):
         if len(self.path_openfile) > 0:
             self.btn_begin.setEnabled(True)
             self.load_dict()
-
             font = QtGui.QFont()
             font.setFamily("Yuanti SC")
             font.setPointSize(60)
@@ -330,6 +329,7 @@ class Ui_MainWindow(QMainWindow):
 
         # 根据方案文件名判断应用场景
         file_name = self.path_openfile.split('/')[-1].split('.')[0]
+        # print(file_name)
         if '3' in file_name and '中断' in file_name:
             print("3# 中断")
             self.btn_dict = plan_dict.get('num3_break',{
