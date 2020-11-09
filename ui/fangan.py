@@ -219,7 +219,7 @@ class Ui_MainWindow(QMainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.btn_to_excel.setText(_translate("MainWindow", "导出模板"))
-        self.ABCDC_label.setText(_translate("MainWindow", "中国农业银行北方数据中心应急演练方案"))
+        self.ABCDC_label.setText(_translate("MainWindow", "中国农业银行数据中心"))
         self.W_Button.setText(_translate("MainWindow", "电气领班W"))
         self.A_Button.setText(_translate("MainWindow", "高配A"))
         self.B_Button.setText(_translate("MainWindow", "高配B"))
@@ -263,6 +263,7 @@ class Ui_MainWindow(QMainWindow):
             self.end_time = datetime.datetime.now()
             self.disable_btn()
             self.btn_to_excel.setEnabled(True)
+            self.btn_read_excel.setEnabled(True)
             for j in range(13):
                 self.item_alter(9,j)
 
@@ -324,6 +325,7 @@ class Ui_MainWindow(QMainWindow):
             with open('./config.json',encoding='utf-8') as f:
                 res = f.read()
                 plan_dict = json.loads(res)
+                # print(plan_dict)
         except Exception as e:
             self.dialog = QtWidgets.QMessageBox.about(self, '通知', e)
 
@@ -334,17 +336,17 @@ class Ui_MainWindow(QMainWindow):
             print("3# 中断")
             self.btn_dict = plan_dict.get('num3_break',{
                 "电气领班W": [8, 4, 3, 2, 1],
-                "高配A": [8, 4, 3, 1],
-                "高配B": [8, 4, 3, 1],
+                "高配A": [8, 4, 3],
+                "高配B": [8, 4, 3],
                 "变电站C": [8, 4, 3, 2, 1],
                 "变电站D": [8, 4, 3, 2, 1],
                 "变电站E": [8, 4, 3, 2, 1],
-                "柴发G": [8, 4, 3, 1],
-                "柴发H": [8, 4, 3, 1],
-                "暖通领班K": [8, 4, 3, 1],
-                "冷站I": [8, 4, 3, 1],
-                "冷站J": [8, 4, 3, 1],
-                "精密空调L": [8, 4, 3, 1],
+                "柴发G": [8, 6],
+                "柴发H": [8, 6],
+                "暖通领班K": [8, 6, 5],
+                "冷站I": [8, 5, 4, 3, 1],
+                "冷站J": [8, 5, 4, 3, 1],
+                "精密空调L": [8, 7, 4, 3],
                 "环境处M": [8, 4, 3, 1],
             })
             self.creat_table_show()
@@ -352,17 +354,17 @@ class Ui_MainWindow(QMainWindow):
         elif '3' in file_name and '恢复' in file_name:
             self.btn_dict = plan_dict.get('num3_resume',{
                 "电气领班W": [8, 4, 3, 2, 1],
-                "高配A": [8, 4, 3, 1],
-                "高配B": [8, 4, 3, 1],
-                "变电站C": [8, 4, 3, 2, 1],
-                "变电站D": [8, 4, 3, 2, 1],
-                "变电站E": [8, 4, 3, 2, 1],
-                "柴发G": [8, 4, 3, 1],
-                "柴发H": [8, 4, 3, 1],
-                "暖通领班K": [8, 4, 3, 1],
-                "冷站I": [8, 4, 3, 1],
-                "冷站J": [8, 4, 3, 1],
-                "精密空调L": [8, 4, 3, 1],
+                "高配A": [8,3,2],
+                "高配B": [8,3,2],
+                "变电站C": [8, 4, 3],
+                "变电站D": [8, 4, 3],
+                "变电站E": [8, 4, 3],
+                "柴发G": [8, 6],
+                "柴发H": [8, 6],
+                "暖通领班K": [8, 5, 4],
+                "冷站I": [8,6, 4],
+                "冷站J": [8,6, 4],
+                "精密空调L": [8, 7, 4],
                 "环境处M": [8, 4, 3, 1],
             })
             self.creat_table_show()
@@ -404,6 +406,7 @@ class Ui_MainWindow(QMainWindow):
             self.creat_table_show()
             return
         if '1' in file_name and '中断' in file_name:
+            # print(file_name)
             self.btn_dict = plan_dict.get('num1_break',{
                 "电气领班W": [8, 4, 3, 2, 1],
                 "高配A": [8, 4, 3, 1],
@@ -422,6 +425,7 @@ class Ui_MainWindow(QMainWindow):
             self.creat_table_show()
             return
         elif '1' in file_name and '恢复' in file_name:
+            print(file_name)
             self.btn_dict = plan_dict.get('num1_resume',{
                 "电气领班W": [8, 4, 3, 2, 1],
                 "高配A": [8, 4, 3, 1],
