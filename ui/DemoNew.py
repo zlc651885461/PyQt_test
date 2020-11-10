@@ -12,9 +12,6 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import pandas as pd
-import numpy as np
-
-import Model.Person
 
 class Ui_MainWindow(QMainWindow):
     def __init__(self):
