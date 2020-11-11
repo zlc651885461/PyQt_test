@@ -276,7 +276,7 @@ class Ui_MainWindow(QMainWindow):
             self.btn_to_excel.setEnabled(True)
             self.btn_read_excel.setEnabled(True)
             for j in range(self.frame_cols-1):
-                self.item_alter(self.frame_rows-2,j)
+                self.item_alter(self.frame_rows-1,j)
     """
     按钮可用
     """
