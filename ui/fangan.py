@@ -33,6 +33,8 @@ class Ui_MainWindow(QMainWindow):
         self.path_openfile = None
         self.path_to_excel = None
         self.btn_dict = {}
+        self.frame_rows = 0
+        self.frame_cols = 0
         self.colnum_dict = {
             "电气领班W": 0,
             "高配A": 1,
@@ -64,7 +66,10 @@ class Ui_MainWindow(QMainWindow):
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)
-        self.tableWidget.setStyleSheet("border:2px solid none; selection-background-color:green; background-color:transparent; gridline-color:none")
+        self.tableWidget.setStyleSheet("border:2px groove gray;"
+                                       "selection-background-color:rgb(169,169,169);"
+                                       "background-color:transparent;"
+                                       "gridline-color:none")
         self.gridLayout.addWidget(self.tableWidget, 2, 0, 1, 6)
 
         # table背景图片
@@ -72,14 +77,13 @@ class Ui_MainWindow(QMainWindow):
         self.tableBack.setObjectName("tableBack")
         self.tableBack.setPixmap(QtGui.QPixmap('./static/数据中心全景图.jpg'))
         self.tableBack.setScaledContents(True)  # 设置图片自动适应大小
-        self.gridLayout.addWidget(self.tableBack, 2, 0, 1, 6)
-        self.tableBack.stackUnder(self.tableWidget)  # 将背景图片放到表格下层
+        self.gridLayout.addWidget(self.tableBack, 2, 0, 1, 6) #添加到整体布局
         self.tableBack.setAutoFillBackground(True)
         # 创建透明度
         op = QtWidgets.QGraphicsOpacityEffect()
-        op.setOpacity(0.5)
-        # self.tableBack.setGraphicsEffect(op)
-
+        op.setOpacity(0.9)
+        self.tableBack.setGraphicsEffect(op)
+        self.tableBack.stackUnder(self.tableWidget)  # 将背景图片放到表格下层
 
         # 左上角图标
         self.ABCImg = QtWidgets.QLabel(self.centralwidget)
@@ -98,11 +102,12 @@ class Ui_MainWindow(QMainWindow):
         self.ABCDC_label.setTextFormat(QtCore.Qt.AutoText)
         self.ABCDC_label.setObjectName("ABCDC_label")
         self.gridLayout.addWidget(self.ABCDC_label, 0, 1, 1, 1)
+        # 布局
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        # 角色计时按钮
+        # 角色按钮
         self.W_Button = QtWidgets.QPushButton(self.centralwidget)
         self.W_Button.setMaximumSize(QtCore.QSize(126, 28))
         self.W_Button.setObjectName("W_Button")
@@ -158,7 +163,7 @@ class Ui_MainWindow(QMainWindow):
         self.horizontalLayout_6.addLayout(self.horizontalLayout_4)
         self.gridLayout.addLayout(self.horizontalLayout_6, 1, 0, 1, 6)
 
-        # 上面三个功能按钮
+        # 功能按钮:开始演练，导入模板，导出模板
         self.btn_begin = QtWidgets.QPushButton(self.centralwidget)
         self.btn_begin.setMaximumSize(QtCore.QSize(128, 28))
         self.btn_begin.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -175,13 +180,13 @@ class Ui_MainWindow(QMainWindow):
         self.btn_to_excel.setObjectName("btn_to_excel")
         self.gridLayout.addWidget(self.btn_to_excel, 0, 5, 1, 1)
 
-        # lcdNumber
+        # lcdNumber计时器
         self.lcdNumber = QtWidgets.QLCDNumber(self.centralwidget)
         self.lcdNumber.setDigitCount(8)
         self.lcdNumber.setMode(QtWidgets.QLCDNumber.Dec)
         self.lcdNumber.setObjectName("lcdNumber")
-        self.lcdNumber.setStyleSheet("border: 2px solid gray; color: white; background: silver;")
-        self.lcdNumber.setMaximumSize(QtCore.QSize(160, 80))
+        self.lcdNumber.setStyleSheet("border: 3px solid gray; color: white; background: black;")
+        self.lcdNumber.setMaximumSize(QtCore.QSize(180, 90))
         self.gridLayout.addWidget(self.lcdNumber, 0, 2, 1, 1)
         # 设计一个定时器
         self.timer = QtCore.QTimer()
@@ -236,6 +241,9 @@ class Ui_MainWindow(QMainWindow):
         self.btn_begin.setText(_translate("MainWindow", "开始演练"))
         self.btn_read_excel.setText(_translate("MainWindow", "导入模板"))
 
+    """
+    上方计时器
+    """
     def clock(self):
         # LCD计时显示
         if not self.flag_start:
@@ -247,6 +255,9 @@ class Ui_MainWindow(QMainWindow):
             t = str(dalte_t).split(',')[-1]
         self.lcdNumber.display(t)
 
+    """
+    开始演练按钮
+    """
     def task_begin(self):
 
         if self.btn_begin.text() == '开始演练':
@@ -264,9 +275,11 @@ class Ui_MainWindow(QMainWindow):
             self.disable_btn()
             self.btn_to_excel.setEnabled(True)
             self.btn_read_excel.setEnabled(True)
-            for j in range(13):
-                self.item_alter(9,j)
-
+            for j in range(self.frame_cols-1):
+                self.item_alter(self.frame_rows-2,j)
+    """
+    按钮可用
+    """
     def enable_btn(self):
         self.A_Button.setEnabled(True)
         self.B_Button.setEnabled(True)
@@ -281,7 +294,9 @@ class Ui_MainWindow(QMainWindow):
         self.K_Button.setEnabled(True)
         self.M_Button.setEnabled(True)
         self.W_Button.setEnabled(True)
-
+    """
+    按钮失效
+    """
     def disable_btn(self):
         self.A_Button.setEnabled(False)
         self.B_Button.setEnabled(False)
@@ -298,7 +313,9 @@ class Ui_MainWindow(QMainWindow):
         self.W_Button.setEnabled(False)
         self.btn_begin.setEnabled(False)
         self.btn_to_excel.setEnabled(False)
-
+    """
+    打开方案
+    """
     def openfile(self):
         # 获取路径
         openfile_name, openfile_type = QFileDialog.getOpenFileName(self, '选择文件', './', 'Excel files(*.xlsx , *.xls);; All files(*);')
@@ -313,7 +330,7 @@ class Ui_MainWindow(QMainWindow):
             font.setPointSize(60)
             self.tableBack.setFont(font)
             self.tableBack.setText(file_name)
-            self.tableBack.setStyleSheet("text-align:center;color:green;")
+            self.tableBack.setStyleSheet("text-align:center;color:rgb(0,255,127);")#浅绿色
             self.tableBack.setTextFormat(QtCore.Qt.AutoText)
             self.tableBack.setAlignment(Qt.AlignCenter)
 
@@ -332,115 +349,29 @@ class Ui_MainWindow(QMainWindow):
         # 根据方案文件名判断应用场景
         file_name = self.path_openfile.split('/')[-1].split('.')[0]
         # print(file_name)
-        if '3' in file_name and '中断' in file_name:
-            print("3# 中断")
-            self.btn_dict = plan_dict.get('num3_break',{
-                "电气领班W": [8, 4, 3, 2, 1],
-                "高配A": [8, 4, 3],
-                "高配B": [8, 4, 3],
-                "变电站C": [8, 4, 3, 2, 1],
-                "变电站D": [8, 4, 3, 2, 1],
-                "变电站E": [8, 4, 3, 2, 1],
-                "柴发G": [8, 6],
-                "柴发H": [8, 6],
-                "暖通领班K": [8, 6, 5],
-                "冷站I": [8, 5, 4, 3, 1],
-                "冷站J": [8, 5, 4, 3, 1],
-                "精密空调L": [8, 7, 4, 3],
-                "环境处M": [8, 4, 3, 1],
-            })
+        if '3#' in file_name and '中断' in file_name:
+            self.btn_dict = plan_dict.get('num3_break')
             self.creat_table_show()
             return
-        elif '3' in file_name and '恢复' in file_name:
-            self.btn_dict = plan_dict.get('num3_resume',{
-                "电气领班W": [8, 4, 3, 2, 1],
-                "高配A": [8,3,2],
-                "高配B": [8,3,2],
-                "变电站C": [8, 4, 3],
-                "变电站D": [8, 4, 3],
-                "变电站E": [8, 4, 3],
-                "柴发G": [8, 6],
-                "柴发H": [8, 6],
-                "暖通领班K": [8, 5, 4],
-                "冷站I": [8,6, 4],
-                "冷站J": [8,6, 4],
-                "精密空调L": [8, 7, 4],
-                "环境处M": [8, 4, 3, 1],
-            })
+        elif '3#' in file_name and '恢复' in file_name:
+            self.btn_dict = plan_dict.get('num3_resume')
             self.creat_table_show()
             return
-        elif '2' in file_name and '中断' in file_name:
-            self.btn_dict = plan_dict.get('num2_break',{
-                "电气领班W": [8, 4, 3, 2, 1],
-                "高配A": [8, 4, 3, 1],
-                "高配B": [8, 4, 3, 1],
-                "变电站C": [8, 4, 3, 2, 1],
-                "变电站D": [8, 4, 3, 2, 1],
-                "变电站E": [8, 4, 3, 2, 1],
-                "柴发G": [8, 4, 3, 1],
-                "柴发H": [8, 4, 3, 1],
-                "暖通领班K": [8, 4, 3, 1],
-                "冷站I": [8, 4, 3, 1],
-                "冷站J": [8, 4, 3, 1],
-                "精密空调L": [8, 4, 3, 1],
-                "环境处M": [8, 4, 3, 1],
-            })
+        elif '2#' in file_name and '中断' in file_name:
+            self.btn_dict = plan_dict.get('num2_break')
             self.creat_table_show()
             return
-        elif '2' in file_name and '恢复' in file_name:
-            self.btn_dict = plan_dict.get('num2_resume',{
-                "电气领班W": [8, 4, 3, 2, 1],
-                "高配A": [8, 4, 3, 1],
-                "高配B": [8, 4, 3, 1],
-                "变电站C": [8, 4, 3, 2, 1],
-                "变电站D": [8, 4, 3, 2, 1],
-                "变电站E": [8, 4, 3, 2, 1],
-                "柴发G": [8, 4, 3, 1],
-                "柴发H": [8, 4, 3, 1],
-                "暖通领班K": [8, 4, 3, 1],
-                "冷站I": [8, 4, 3, 1],
-                "冷站J": [8, 4, 3, 1],
-                "精密空调L": [8, 4, 3, 1],
-                "环境处M": [8, 4, 3, 1],
-            })
+        elif '2#' in file_name and '恢复' in file_name:
+            self.btn_dict = plan_dict.get('num2_resume')
             self.creat_table_show()
             return
-        if '1' in file_name and '中断' in file_name:
+        if '1#' in file_name and '中断' in file_name:
             # print(file_name)
-            self.btn_dict = plan_dict.get('num1_break',{
-                "电气领班W": [8, 4, 3, 2, 1],
-                "高配A": [8, 4, 3, 1],
-                "高配B": [8, 4, 3, 1],
-                "变电站C": [8, 4, 3, 2, 1],
-                "变电站D": [8, 4, 3, 2, 1],
-                "变电站E": [8, 4, 3, 2, 1],
-                "柴发G": [8, 4, 3, 1],
-                "柴发H": [8, 4, 3, 1],
-                "暖通领班K": [8, 4, 3, 1],
-                "冷站I": [8, 4, 3, 1],
-                "冷站J": [8, 4, 3, 1],
-                "精密空调L": [8, 4, 3, 1],
-                "环境处M": [8, 4, 3, 1],
-            })
+            self.btn_dict = plan_dict.get('num1_break')
             self.creat_table_show()
             return
-        elif '1' in file_name and '恢复' in file_name:
-            print(file_name)
-            self.btn_dict = plan_dict.get('num1_resume',{
-                "电气领班W": [8, 4, 3, 2, 1],
-                "高配A": [8, 4, 3, 1],
-                "高配B": [8, 4, 3, 1],
-                "变电站C": [8, 4, 3, 2, 1],
-                "变电站D": [8, 4, 3, 2, 1],
-                "变电站E": [8, 4, 3, 2, 1],
-                "柴发G": [8, 4, 3, 1],
-                "柴发H": [8, 4, 3, 1],
-                "暖通领班K": [8, 4, 3, 1],
-                "冷站I": [8, 4, 3, 1],
-                "冷站J": [8, 4, 3, 1],
-                "精密空调L": [8, 4, 3, 1],
-                "环境处M": [8, 4, 3, 1],
-            })
+        elif '1#' in file_name and '恢复' in file_name:
+            self.btn_dict = plan_dict.get('num1_resume')
             self.creat_table_show()
             return
         else:
@@ -456,15 +387,15 @@ class Ui_MainWindow(QMainWindow):
         if len(self.path_openfile) > 0:
             frame_all = pd.read_excel(self.path_openfile, index_col=0)
             # print(frame_all)
-            frame_rows = frame_all.shape[0]
-            frame_cols = frame_all.shape[1]
+            self.frame_rows = frame_all.shape[0]
+            self.frame_cols = frame_all.shape[1]
 
             # 读取表格行/列表头
             self.frame_h_header = frame_all.columns.values.tolist()
             self.frame_v_header = frame_all.index.values.tolist()
             # 给tablewidget设置行列表头
-            self.tableWidget.setColumnCount(frame_cols)
-            self.tableWidget.setRowCount(frame_rows)
+            self.tableWidget.setColumnCount(self.frame_cols)
+            self.tableWidget.setRowCount(self.frame_rows)
             self.tableWidget.setHorizontalHeaderLabels(self.frame_h_header)
             self.tableWidget.horizontalHeader().setStyleSheet("border:2px solid #888; background-color:#AAA; font:14px;")
             self.tableWidget.verticalHeader().setFixedWidth(60)
@@ -472,11 +403,11 @@ class Ui_MainWindow(QMainWindow):
             self.tableWidget.verticalHeader().setStyleSheet("border:2px solid #888; background-color:#AAA;font:14px;")
 
             # 遍历表格每个元素，同时添加到tablewidget中
-            for j in range(frame_cols):
+            for j in range(self.frame_cols):
                 input_table_cols_list = frame_all[frame_all.columns[j]].values.tolist()
                 # button_start.setStyleSheet('''text-align:center;background-color:DarkSeaGreen;height:30px;border-style:outset;font:14px''')
 
-                for i in range(0, frame_rows):
+                for i in range(0, self.frame_rows):
                     input_table_item = input_table_cols_list[i]
                     # 将遍历的元素添加到tablewidget中并显示
                     input_table_item = str(input_table_item)
