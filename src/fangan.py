@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'fangan.ui'
+# Form implementation generated from reading src file 'test.src'
 #
 # Created by: PyQt5 UI code generator 5.15.0
 #
@@ -10,8 +10,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import datetime
 from PyQt5.QtGui import QIcon,QBrush,QColor
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtWidgets import QTableWidgetItem,QFileDialog,QMainWindow
+from PyQt5.QtCore import Qt
 import pandas as pd
 import json
 import os
@@ -53,11 +53,11 @@ class Ui_MainWindow(QMainWindow):
         MainWindow.resize(1596, 885)
         MainWindow.setMaximumSize(QtCore.QSize(16777215, 16777215))
         MainWindow.setIconSize(QtCore.QSize(128, 128))
+        MainWindow.setWindowIcon(QIcon("resource/logo.png"))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
-
         # tableweidget
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
         self.tableWidget.setObjectName("tableWidget")
@@ -72,7 +72,7 @@ class Ui_MainWindow(QMainWindow):
         # table背景图片
         self.tableBack = QtWidgets.QLabel(self.centralwidget)
         self.tableBack.setObjectName("tableBack")
-        self.tableBack.setPixmap(QtGui.QPixmap('./static/数据中心全景图.jpg'))
+        self.tableBack.setPixmap(QtGui.QPixmap('./resource/数据中心全景图.jpg'))
         self.tableBack.setScaledContents(True)  # 设置图片自动适应大小
         self.gridLayout.addWidget(self.tableBack, 2, 0, 1, 6) #添加到整体布局
         self.tableBack.setAutoFillBackground(True)
@@ -86,7 +86,7 @@ class Ui_MainWindow(QMainWindow):
         self.ABCImg = QtWidgets.QLabel(self.centralwidget)
         self.ABCImg.setMaximumSize(QtCore.QSize(180, 61))
         self.ABCImg.setObjectName("ABCImg")
-        self.ABCImg.setPixmap(QtGui.QPixmap('./static/LabelABC.png'))
+        self.ABCImg.setPixmap(QtGui.QPixmap('./resource/LabelABC.png'))
         self.ABCImg.setScaledContents(True)
         self.gridLayout.addWidget(self.ABCImg, 0, 0, 1, 1)
         # 中间标题
@@ -219,7 +219,7 @@ class Ui_MainWindow(QMainWindow):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "中国农业银行北方数据中心应急演练"))
         self.btn_to_excel.setText(_translate("MainWindow", "导出模板"))
         self.ABCDC_label.setText(_translate("MainWindow", "中国农业银行北方数据中心应急演练"))
         self.W_Button.setText(_translate("MainWindow", "电气领班W"))
@@ -315,7 +315,7 @@ class Ui_MainWindow(QMainWindow):
     """
     def openfile(self):
         # 获取路径
-        openfile_name, openfile_type = QFileDialog.getOpenFileName(self, '选择文件', './', 'Excel files(*.xlsx , *.xls);; All files(*);')
+        openfile_name, openfile_type = QFileDialog.getOpenFileName(self, '选择文件', './', 'Excel files(*.xlsx , *.xls);;WPS files(*.et,*.ett);; All files(*);')
         # print(openfile_name,openfile_type)
         self.path_openfile = openfile_name
         file_name = self.path_openfile.split('/')[-1].split('.')[0]
@@ -447,7 +447,7 @@ class Ui_MainWindow(QMainWindow):
     导出功能
     """
     def save_event(self):
-        directory1 = QFileDialog.getSaveFileName(None, "文件保存", "C:/", "Excel files(*.xlsx , *.xls);;All files(*);")
+        directory1 = QFileDialog.getSaveFileName(None, "文件保存", "./", "Excel files(*.xlsx , *.xls);;WPS files(*.et,*.ett);;All files(*);")
         self.path_to_excel = os.path.join(directory1[0])
         if len(self.path_to_excel) != 0:
             self.task_to_excel()

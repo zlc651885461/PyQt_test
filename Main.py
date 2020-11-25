@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5.QtWidgets import QApplication,QMainWindow
-from ui.fangan import Ui_MainWindow as fy
+from src.fangan import Ui_MainWindow as fy
 
 
 if __name__ == '__main__':
@@ -9,8 +9,8 @@ if __name__ == '__main__':
     mainWindow = QMainWindow()
     ui_fy = fy()
     # 事件绑定
-    # ui.ReadExcelButton.clicked.connect(ui.openfile())
-    # ui.ReadExcelButton.clicked.connect(ui.creat_table_show())
+    # src.ReadExcelButton.clicked.connect(src.openfile())
+    # src.ReadExcelButton.clicked.connect(src.creat_table_show())
     # 向窗口添加控件
     # ui_dn.setupUi(mainWindow)
     ui_fy.setupUi(mainWindow)
